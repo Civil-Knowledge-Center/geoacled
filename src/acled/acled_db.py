@@ -2,41 +2,46 @@ import os
 
 import dotenv
 import polars as pl
-import sqlalchemy as sa
+
+from utils import date_range
+
+from .acled_query import AcledMonth
 
 _ = dotenv.load_dotenv()
 DB_USER = os.getenv('DB_USER')
 DB_PASS = os.getenv('DB_PASS')
-DB = 'acled'
-DB_ADDRESS = 'localhost:5432'
+DB = os.getenv('DB')
+DB_ADDRESS = os.getenv('DB_ADDRESS')
 
 URI = f'postgresql://{DB_USER}:{DB_PASS}@{DB_ADDRESS}/{DB}'
 
-def build_filter_query(country: str, start: str, stop: str
+def _build_filter_query(obj: AcledMonth
     ) -> str:
+    start, end = date_range(obj.year, obj.month)
     return f"""
-        FROM acled
-        WHERE country = '{country}'
-        AND event_date BETWEEN '{start}' and '{stop}'
+        SELECT *
+        FROM acled_events
+        WHERE country = '{obj.country}'
+        AND event_date BETWEEN '{start}' and '{end}'
     """
 
-def write_df(df: pl.DataFrame,
-             table: str,
-             unique_column: str,
-             query: str) -> None:
-    engine = sa.create_engine(URI)
-    inspector = sa.inspect(engine)
-    with engine.begin() as conn:
-        if not inspector.has_table(table):
-            _ = df.write_database(
-                    table_name=table,
-                    connection=URI,
-                    if_table_exists='replace'
-                )
-            _ = conn.execute(sa.text(
-                f"""
-                ALTER TABLE {table}
-                ADD CONSTRAINT unique_event UNIQUE (f{unique_column})
-                """))
-        else:
-            filter_df = pl.read_database_uri(query, URI)
+def _build_filter_df(obj: AcledMonth) -> pl.DataFrame:
+    try:
+        return pl.read_database_uri(_build_filter_query(obj), URI)
+    except Exception:
+        return pl.DataFrame({'event_id_cnty': []})
+
+def _filter_df(obj: AcledMonth) -> pl.DataFrame:
+    filter_df = _build_filter_df(obj)
+    return obj.df.filter(
+        ~pl.col('event_id_cnty').is_in(filter_df['event_id_cnty']))
+
+def acled_df_from_db(obj: AcledMonth) -> pl.DataFrame:
+    return _build_filter_df(obj)
+
+def acled_df_to_db(obj: AcledMonth) -> pl.DataFrame:
+    df = _filter_df(obj)
+    df.write_database('acled_events',
+                                   connection=URI,
+                                   if_table_exists='append')
+    return df
