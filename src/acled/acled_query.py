@@ -1,4 +1,5 @@
 """Module to pull a one month range for a single country from ACLED."""
+
 from dataclasses import dataclass
 
 import httpx
@@ -9,6 +10,7 @@ from utils import date_range
 
 URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+
 
 @dataclass(frozen=True)
 class AcledMonth:
@@ -21,13 +23,14 @@ class AcledMonth:
     def _query_acled(self) -> httpx.Response:
         start, end = date_range(self.year, self.month)
         headers = {
-            'Authorization': f'Bearer {authenticate()['access_token']}',
+            'Authorization': f'Bearer {authenticate()["access_token"]}',
             'Content-Type': 'application/json',
         }
         params = {
             'country': f'{self.country}',
-            'event_date': f'BETWEEN|{start}|{end}',
-            'format': 'json'
+            'event_date': f'{start}|{end}',
+            'event_date_where': 'BETWEEN',
+            'format': 'json',
         }
         with httpx.Client(timeout=TIMEOUT) as client:
             r = client.get(url=URL, params=params, headers=headers)
