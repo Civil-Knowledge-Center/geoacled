@@ -1,6 +1,9 @@
 """Utility functions for geoacled module."""
 import calendar
 from datetime import date
+import unicodedata
+
+
 
 
 def date_range(year: int, month: int) -> tuple[str,str]:
@@ -17,3 +20,9 @@ def date_range(year: int, month: int) -> tuple[str,str]:
     first = date(year, month, 1).isoformat()
     last = date(year, month, calendar.monthrange(year, month)[1]).isoformat()
     return first, last
+
+def strip_accents(text: str) -> str:
+    return ''.join(
+        c for c in unicodedata.normalize('NFKD', text)
+        if not unicodedata.combining(c)
+    )

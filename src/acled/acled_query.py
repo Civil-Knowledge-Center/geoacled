@@ -1,6 +1,7 @@
 """Module to pull a one month range for a single country from ACLED."""
 
 from dataclasses import dataclass
+from functools import cached_property
 
 import httpx
 import polars as pl
@@ -33,11 +34,11 @@ class AcledMonth:
             'format': 'json',
         }
         with httpx.Client(timeout=TIMEOUT) as client:
+            print(f'Query to ACLED: {params}')
             r = client.get(url=URL, params=params, headers=headers)
             r.raise_for_status()
             return r
-
-    @property
+    @cached_property
     def df(self) -> pl.DataFrame:
         """Returns a polars dataframe from an ACLED query."""
         return pl.DataFrame(self._query_acled().json()['data'])

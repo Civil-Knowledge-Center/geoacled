@@ -1,8 +1,18 @@
 import httpx
 import pycountry
 
+from acled import AcledMonth
+from acled.acled_db import acled_df_from_db, acled_df_to_db
 
-def get_geojson(country_name) -> tuple[dict[str, str], str]:
+
+def fetch_acled_month(country: str, year: int, month: int):
+    obj = AcledMonth(country, year, month)
+    existing = acled_df_from_db(obj)
+    if not existing.is_empty():
+        return existing
+    return acled_df_to_db(obj)
+
+def fetch_geojson(country_name) -> tuple[dict[str, str], str]:
     try:
         country = pycountry.countries.get(name=country_name)
         if not country:
