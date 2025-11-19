@@ -27,12 +27,12 @@ def clean_column(df: pl.DataFrame, adm: str | None,
         .str.to_lowercase()
         .alias(alias))
 
-def clean_list_to_dataframe(lst: list[str],
-                            original: str | None = 'shapeName',
-                            cleaned: str | None = 'cleaned_name'):
+def clean_set_to_dataframe(cleaning_set: set[str],
+                        original: str | None = 'shapeName',
+                        cleaned: str | None = 'cleaned_name') -> pl.DataFrame:
     original_list = []
     cleaned_list = []
-    for val in lst:
+    for val in cleaning_set:
         original_list.append(val)
         cleaned_list.append(strip_accents(val).lower().strip())
     return pl.DataFrame({original:original_list, cleaned: cleaned_list})
