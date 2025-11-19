@@ -6,9 +6,9 @@ import polars as pl
 @dataclass
 class Choropleth:
     lookup_df: pl.DataFrame
-    lookup_column: str
+    lookup_column: str | None = 'shapeName'
     geojson: dict = field(default_factory=dict)
-    geojson_id: str = 'SIGLA'
+    geojson_id: str = 'shapeName'
     feature_key: str = 'features'
     theme: str = 'dark'
     points: alt.Chart | None = None
@@ -32,7 +32,7 @@ class Choropleth:
     basemap_color_column: str = 'incident_count'
     basemap_color_scheme: Literal['reds', 'blueorange']= 'blueorange'
     basemap_tooltips: Mapping[str, str] | None = field(default_factory=lambda: 
-                                                {'properties.Estado': 'State',
+                                                {'properties.shapeName': 'State',
                                            'incident_count': 'Incidents'})
     width: int = 600
     height: int = 600
@@ -78,10 +78,7 @@ class Choropleth:
         ]
     def _build_base_map(self) -> alt.Chart:
         return(
-            alt.Chart(
-                alt.Data(
-                    values=self.geojson[self.feature_key]
-                ))
+            alt.Chart(self.geojson)
                 .mark_geoshape(
                     stroke=self.basemap_stroke_color,
                     strokeWidth=self.basemap_stroke_width

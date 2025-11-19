@@ -5,9 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "altair>=6.0.0",
     "connectorx>=0.4.4",
     "geopandas>=1.1.1",
     "httpx>=0.28.1",
+    "matplotlib>=3.10.7",
     "pandas>=2.3.3",
     "polars>=1.35.1",
     "psycopg2>=2.9.11",
@@ -16,3 +18,6 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "sqlalchemy>=2.0.44",
 ]
+
+[tool.setuptools.package-data]
+geoacled = ["py.typed"]

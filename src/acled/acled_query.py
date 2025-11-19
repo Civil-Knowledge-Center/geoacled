@@ -7,7 +7,7 @@ import httpx
 import polars as pl
 
 from acled.auth import authenticate
-from utils import date_range
+from src.utils.date_range import date_range
 
 URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
