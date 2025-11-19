@@ -5,15 +5,17 @@ import altair as alt
 import geopandas as gpd
 import polars as pl
 
-from chart import Choropleth
-from src.utils.clean import clean_column, clean_list_to_dataframe
-from src.utils.fetch import fetch_acled_month, fetch_geojson
-from geojson import get_region_list, build_geo_df
+from .chart import Choropleth
+from .geojson import build_geo_df, get_region_list
 from .types import FeatureCollection
+from .utils.clean import clean_column, clean_list_to_dataframe
+from .utils.fetch import fetch_acled_month, fetch_geojson
 
 
-class PipelineRuntimeError(Exception):
-    pass
+class PipelineRuntimeError(RuntimeError):
+    def __init__(self, msg: str, e: Exception):
+        super().__init__(f"{msg:} {e}")
+
 
 @dataclass
 class GeoAcled:
@@ -28,7 +30,7 @@ class GeoAcled:
                                             self.month)
         except Exception as e:
             error_msg = 'Error fetching ACLED data'
-            raise PipelineRuntimeError(f'{error_msg}: {e}') from e
+            raise PipelineRuntimeError(error_msg, e) from e
         return acled_df
 
     def _fetch_geojson(self) -> tuple[FeatureCollection, str]:
@@ -36,7 +38,7 @@ class GeoAcled:
             geojson, adm = fetch_geojson(self.country.lower(), self.adm)
         except Exception as e:
             error_msg = 'Error fetching geojson data'
-            raise PipelineRuntimeError(f'{error_msg}: {e}') from e
+            raise PipelineRuntimeError(error_msg, e) from e
         return geojson, adm
 
     def _join(self) -> pl.DataFrame:
@@ -51,7 +53,7 @@ class GeoAcled:
             return joined_df
         except Exception as e:
             error_msg = 'Error joining acled data with geojson data'
-            raise PipelineRuntimeError(f'{error_msg} : {e}') from e
+            raise PipelineRuntimeError(error_msg, e) from e
 
     def _incident_count(self) -> pl.DataFrame:
         incidents_df = self.joined_df.group_by(
