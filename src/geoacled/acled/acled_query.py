@@ -56,4 +56,5 @@ class AcledYear:
                                                 self.year_end,
                                                 page))
             concat_df = pl.concat([concat_df, fetch_df])
+            page += 1
         return concat_df
