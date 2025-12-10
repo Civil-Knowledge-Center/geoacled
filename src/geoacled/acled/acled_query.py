@@ -29,8 +29,7 @@ def _query_acled(country, start, end, page: int | None = None) -> httpx.Response
         print(f'Query to ACLED: {params}')
         resp = httpx.get(URL, headers=headers, params=params, timeout=30.0)
         resp.raise_for_status()
-        print(resp.json())
-        return resp.json()
+        return resp
 
 @dataclass(frozen=True)
 class AcledMonth:
@@ -64,8 +63,8 @@ class AcledYear:
             fetch_df = pl.DataFrame(_query_acled(self.country,
                                                 self.year_start,
                                                 self.year_end,
-                                                page))
+                                                page).json()['data'])
             concat_df = pl.concat([concat_df, fetch_df])
             page += 1
-            height = concat_df.height
+            height = fetch_df.height
         return concat_df
