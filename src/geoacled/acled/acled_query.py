@@ -44,7 +44,7 @@ class AcledMonth:
     def df(self) -> pl.DataFrame:
         """Returns a polars dataframe for one month ACLED query."""
         start, end = date_range(self.year, self.month) 
-        return pl.DataFrame(_query_acled(self.country, start, end)['data'])
+        return pl.DataFrame(_query_acled(self.country, start, end).json()['data'])
 
 @dataclass(frozen=True)
 class AcledYear:
@@ -64,7 +64,7 @@ class AcledYear:
             fetch_df = pl.DataFrame(_query_acled(self.country,
                                                 self.year_start,
                                                 self.year_end,
-                                                page)['data'])
+                                                page).json()['data'])
             concat_df = pl.concat([concat_df, fetch_df])
             page += 1
             height = fetch_df.height
