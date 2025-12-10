@@ -30,7 +30,7 @@ def _query_acled(country: str, start: str, end: str, page: int | None = None ) -
             print(f'Query to ACLED: {params}')
             r = client.get(url=URL, params=params, headers=headers)
             r.raise_for_status()
-            return r.json()
+            return r
 
 @dataclass(frozen=True)
 class AcledMonth:
