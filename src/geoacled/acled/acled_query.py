@@ -23,6 +23,13 @@ def _query_acled(country, start, end, page: int | None = None) -> httpx.Response
             'event_date_where': 'BETWEEN',
             'format': 'json',
         }
+        if page is not None:
+            params["page"] = str(page)
+
+        resp = httpx.get(URL, headers=headers, params=params, timeout=30.0)
+        resp.raise_for_status()
+
+        return resp.json()
 
 @dataclass(frozen=True)
 class AcledMonth:
