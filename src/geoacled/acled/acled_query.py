@@ -11,6 +11,7 @@ from geoacled.utils.date_range import date_range
 
 URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+ACLED_PAGE_LIMIT = 5000
 
 def _query_acled(country, start, end, page: int | None = None) -> httpx.Response:
         headers = {
@@ -49,8 +50,8 @@ class AcledMonth:
 class AcledYear:
 
     country: str
-    year_start: int
-    year_end: int
+    year_start: str
+    year_end: str
 
     @cached_property
     def df(self) -> pl.DataFrame:
@@ -58,6 +59,7 @@ class AcledYear:
         concat_df = pl.DataFrame()
         page = 1
         height = 5000
+        
         while height == 5000:
             fetch_df = pl.DataFrame(_query_acled(self.country,
                                                 self.year_start,
