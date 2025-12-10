@@ -30,7 +30,7 @@ def _query_acled(country: str, start: str, end: str, page: int | None = None ) -
             print(f'Query to ACLED: {params}')
             r = client.get(url=URL, params=params, headers=headers)
             r.raise_for_status()
-            return r
+            return r.json()
 
 @dataclass(frozen=True)
 class AcledMonth:
@@ -44,7 +44,7 @@ class AcledMonth:
     def df(self) -> pl.DataFrame:
         """Returns a polars dataframe for one month ACLED query."""
         start, end = date_range(self.year, self.month) 
-        return pl.DataFrame(_query_acled(self.country, start, end).json()['data'])
+        return pl.DataFrame(_query_acled(self.country, start, end)['data'])
 
 @dataclass(frozen=True)
 class AcledYear:
