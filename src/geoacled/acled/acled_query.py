@@ -28,7 +28,7 @@ def _query_acled(country, start, end, page: int | None = None) -> httpx.Response
         print(f'Query to ACLED: {params}')
         resp = httpx.get(URL, headers=headers, params=params, timeout=30.0)
         resp.raise_for_status()
-
+        print(resp.json())
         return resp.json()
 
 @dataclass(frozen=True)
