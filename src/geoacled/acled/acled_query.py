@@ -50,11 +50,13 @@ class AcledYear:
         """Returns a polars dataframe for one year of ACLED data."""
         concat_df = pl.DataFrame()
         page = 1
-        while concat_df.height <= 5000:
+        height = 5000
+        while height == 5000:
             fetch_df = pl.DataFrame(_query_acled(self.country,
                                                 self.year_start,
                                                 self.year_end,
                                                 page))
             concat_df = pl.concat([concat_df, fetch_df])
             page += 1
+            height = concat_df.height
         return concat_df
