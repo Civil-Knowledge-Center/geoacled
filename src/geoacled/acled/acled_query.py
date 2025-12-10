@@ -13,7 +13,7 @@ URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 ACLED_PAGE_LIMIT = 5000
 
-def _query_acled(country, start, end, page: int | None = None) -> httpx.Response:
+def _query_acled(country: str, start: str, end: str, page: int | None = None ) -> httpx.Response:
         headers = {
             'Authorization': f'Bearer {authenticate()["access_token"]}',
             'Content-Type': 'application/json',
@@ -24,12 +24,13 @@ def _query_acled(country, start, end, page: int | None = None) -> httpx.Response
             'event_date_where': 'BETWEEN',
             'format': 'json',
         }
-        if page is not None:
-            params["page"] = str(page)
-        print(f'Query to ACLED: {params}')
-        resp = httpx.get(URL, headers=headers, params=params, timeout=30.0)
-        resp.raise_for_status()
-        return resp
+        if page:
+             params['page'] = str(page)
+        with httpx.Client(timeout=TIMEOUT) as client:
+            print(f'Query to ACLED: {params}')
+            r = client.get(url=URL, params=params, headers=headers)
+            r.raise_for_status()
+            return r
 
 @dataclass(frozen=True)
 class AcledMonth:
