@@ -1,8 +1,8 @@
 import httpx
 import pycountry
 
-from geoacled.acled import AcledMonth
 from geoacled.acled.acled_db import acled_df_from_db, acled_df_to_db
+from geoacled.acled.acled_query import AcledMonth
 from geoacled.geoacled_types import FeatureCollection
 
 
@@ -22,7 +22,9 @@ def fetch_geojson(country_name:str, adm:str) -> tuple[FeatureCollection, str]:
             f"https://www.geoboundaries.org/api/current/gbOpen/{country.alpha_3}/{adm}/"
         )
         r.raise_for_status()
-        geourl, adm = r.json()["gjDownloadURL"], r.json()["boundaryType"]
+        geourl, adm = r.json()["simplifiedGeometryGeoJSON"], r.json()["boundaryType"]
+        
+        #geourl, adm = r.json()["gjDownloadURL"], r.json()["boundaryType"]
         geo_r = httpx.get(geourl, follow_redirects=True)
         r.raise_for_status()
         if not geo_r.text.strip().startswith("{"):

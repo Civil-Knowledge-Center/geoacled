@@ -1,3 +1,43 @@
+"""Utilities for generating monthly ACLED choropleth maps.
+
+This module defines the `GeoAcled` class, which produces an Altair
+LayerChart for a given country, year, and month. ACLED data can be
+provided in three ways:
+
+- a path to a CSV (downloaded from ACLED),
+- a Polars DataFrame containing ACLED-formatted data, or
+- fetched directly from the ACLED API.
+
+A Postgres-backed cache is optionally supported to avoid exceeding ACLED
+API rate limits. When using the API or the Postgres cache layer, a .env
+file must exist at the project root with the following variables:
+
+ACLED_EMAIL="my_acled_email@some.edu"
+ACLED_PASS="my_secret_acled_password"
+CACHE_FILE="/var/tmp/acled_oauth.json"   # Recommended, configurable
+
+DB_USER="my_database_username"
+DB_PASS="my_secret_db_password"
+DB="my_database_name"
+DB_ADDRESS="my_database_address"
+
+Example:
+-------
+    from geoacled import GeoAcled
+
+    geo = GeoAcled(
+        country="Mexico",
+        year=2024,
+        month=1,
+        adm="ADM1",
+        csv="downloaded_acled.csv",   # Optional
+        df=acled_df                  # Optional
+    )
+
+    chart = geo.chorolpleth_chart
+
+"""
+
 from dataclasses import dataclass
 from functools import cached_property
 
@@ -16,17 +56,25 @@ class PipelineRuntimeError(RuntimeError):
     def __init__(self, msg: str, e: Exception):
         super().__init__(f"{msg:} {e}")
 
-@dataclass
+@dataclass(frozen=True)
 class GeoAcled:
     country: str  = 'Mexico'
     year: int  = 2024
     month: int  = 1
     adm: str  = 'ADM1'
+    csv: str | None = None
+    df: pl.DataFrame | None = None
+
     def _fetch_acled(self) -> pl.DataFrame:
+        if self.df is not None:
+            return self.df
+        if self.csv:
+            return pl.read_csv(self.csv)
         try:
             acled_df = fetch_acled_month(self.country.title(),
                                             self.year,
-                                            self.month)
+                                            self.month,
+                                            )
         except Exception as e:
             error_msg = 'Error fetching ACLED data'
             raise PipelineRuntimeError(error_msg, e) from e

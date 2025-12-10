@@ -12,6 +12,17 @@ from geoacled.utils.date_range import date_range
 URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
+def _query_acled(country, start, end, page: int | None = None) -> httpx.Response:
+        headers = {
+            'Authorization': f'Bearer {authenticate()["access_token"]}',
+            'Content-Type': 'application/json',
+        }
+        params = {
+            'country': f'{country}',
+            'event_date': f'{start}|{end}',
+            'event_date_where': 'BETWEEN',
+            'format': 'json',
+        }
 
 @dataclass(frozen=True)
 class AcledMonth:
@@ -21,24 +32,28 @@ class AcledMonth:
     year: int
     month: int
 
-    def _query_acled(self) -> httpx.Response:
-        start, end = date_range(self.year, self.month)
-        headers = {
-            'Authorization': f'Bearer {authenticate()["access_token"]}',
-            'Content-Type': 'application/json',
-        }
-        params = {
-            'country': f'{self.country}',
-            'event_date': f'{start}|{end}',
-            'event_date_where': 'BETWEEN',
-            'format': 'json',
-        }
-        with httpx.Client(timeout=TIMEOUT) as client:
-            print(f'Query to ACLED: {params}')
-            r = client.get(url=URL, params=params, headers=headers)
-            r.raise_for_status()
-            return r
     @cached_property
     def df(self) -> pl.DataFrame:
-        """Returns a polars dataframe from an ACLED query."""
-        return pl.DataFrame(self._query_acled().json()['data'])
+        """Returns a polars dataframe for one month ACLED query."""
+        start, end = date_range(self.year, self.month) 
+        return pl.DataFrame(_query_acled(self.country, start, end).json()['data'])
+
+@dataclass(frozen=True)
+class AcledYear:
+
+    country: str
+    year_start: int
+    year_end: int
+
+    @cached_property
+    def df(self) -> pl.DataFrame:
+        """Returns a polars dataframe for one year of ACLED data."""
+        concat_df = pl.DataFrame()
+        page = 1
+        while concat_df.height <= 5000:
+            fetch_df = pl.DataFrame(_query_acled(self.country,
+                                                self.year_start,
+                                                self.year_end,
+                                                page))
+            concat_df = pl.concat([concat_df, fetch_df])
+        return concat_df
