@@ -64,7 +64,7 @@ class AcledYear:
             fetch_df = pl.DataFrame(_query_acled(self.country,
                                                 self.year_start,
                                                 self.year_end,
-                                                page).json()['data'])
+                                                page)['data'])
             concat_df = pl.concat([concat_df, fetch_df])
             page += 1
             height = fetch_df.height
