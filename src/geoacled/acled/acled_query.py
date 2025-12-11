@@ -46,9 +46,10 @@ def _query_acled(country: str | None = None,
 class AcledMonth:
     """Class defines the country, year, and month to be queried."""
 
-    country: str
-    year: int
-    month: int
+    country: str | None = None
+    iso: int | None = None
+    year: int | None = 2021
+    month: int | None = 1
 
     @cached_property
     def df(self) -> pl.DataFrame:
@@ -59,9 +60,10 @@ class AcledMonth:
 @dataclass(frozen=True)
 class AcledYear:
 
-    country: str
-    year_start: str
-    year_end: str
+    country: str | None = None
+    iso: int | None = None 
+    year_start: str | None = '2021-01-01'
+    year_end: str | None = '2021-12-31'
 
     @cached_property
     def df(self) -> pl.DataFrame:
