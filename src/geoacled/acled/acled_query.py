@@ -15,8 +15,8 @@ ACLED_PAGE_LIMIT = 5000
 
 def _query_acled(country: str | None = None,
                  iso: int | None = None,
-                 start: str | None = '2021-01-01',
-                 end: str | None = '2021-01-30',
+                 start: str | None = None,
+                 end: str | None = None,
                  page: int | None = None ) -> httpx.Response:
         headers = {
             'Authorization': f'Bearer {authenticate()["access_token"]}',
@@ -48,14 +48,17 @@ class AcledMonth:
 
     country: str | None = None
     iso: int | None = None
-    year: int | None = 2021
-    month: int | None = 1
+    year: int  = 2021
+    month: int = 1
 
     @cached_property
     def df(self) -> pl.DataFrame:
         """Returns a polars dataframe for one month ACLED query."""
         start, end = date_range(self.year, self.month) 
-        return pl.DataFrame(_query_acled(self.country, start, end).json()['data'])
+        return pl.DataFrame(_query_acled(country=self.country, 
+                                         iso=self.iso,
+                                         start=start, 
+                                         end=end).json()['data'])
 
 @dataclass(frozen=True)
 class AcledYear:
