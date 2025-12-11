@@ -32,7 +32,7 @@ def _query_acled(country: str | None = None,
              params['country'] = country
         if iso:
              params['iso'] = str(iso)
-        if not country or iso:
+        if not country or not iso:
              raise ValueError('Must supply country or numeric iso code')
         if page:
              params['page'] = str(page)
