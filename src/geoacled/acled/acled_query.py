@@ -76,10 +76,11 @@ class AcledYear:
         height = 5000
         
         while height == 5000:
-            fetch_df = pl.DataFrame(_query_acled(self.country,
-                                                self.year_start,
-                                                self.year_end,
-                                                page).json()['data'])
+            fetch_df = pl.DataFrame(_query_acled(country=self.country,
+                                                iso=self.iso,
+                                                start=self.year_start,
+                                                end=self.year_end,
+                                                page=page).json()['data'])
             concat_df = pl.concat([concat_df, fetch_df])
             page += 1
             height = fetch_df.height
