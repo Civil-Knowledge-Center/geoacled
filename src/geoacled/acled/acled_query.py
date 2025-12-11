@@ -30,7 +30,7 @@ def _query_acled(country: str | None = None,
             params['event_date'] = f'{start}|{end}'
             params['event_date_where'] = 'BETWEEN'
         if year:
-            params['year'] = str({year})
+            params['year'] = str(year)
         if not start and not end and not year:
             raise ValueError('Must supply either a start and end date or a year')
         if country:
@@ -45,6 +45,7 @@ def _query_acled(country: str | None = None,
             print(f'Query to ACLED: {params}')
             r = client.get(url=URL, params=params, headers=headers)
             r.raise_for_status()
+            print(r.status_code)
             return r
 
 @dataclass(frozen=True)
@@ -52,7 +53,7 @@ class AcledMonth:
     """Class defines the country, year, and month to be queried."""
 
     country: str | None = None
-    iso: int | None = None
+    iso: str | None = None
     year: int  = 2021
     month: int = 1
 
