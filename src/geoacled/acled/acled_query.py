@@ -23,9 +23,7 @@ def _query_acled(country: str | None = None,
             'Authorization': f'Bearer {authenticate()["access_token"]}',
             'Content-Type': 'application/json',
         }
-        params = {
-            'format': 'json',
-        }
+        params = {}
         if start and end:
             params['event_date'] = f'{start}|{end}'
             params['event_date_where'] = 'BETWEEN'
