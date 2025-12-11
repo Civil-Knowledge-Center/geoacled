@@ -13,17 +13,27 @@ URL = 'https://acleddata.com/api/acled/read?_format=json'
 TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 ACLED_PAGE_LIMIT = 5000
 
-def _query_acled(country: str, start: str, end: str, page: int | None = None ) -> httpx.Response:
+def _query_acled(country: str | None = None,
+                 iso: int | None = None,
+                 start: str | None = '2021-01-01',
+                 end: str | None = '2021-01-30',
+                 page: int | None = None ) -> httpx.Response:
         headers = {
             'Authorization': f'Bearer {authenticate()["access_token"]}',
             'Content-Type': 'application/json',
         }
         params = {
-            'country': f'{country}',
+
             'event_date': f'{start}|{end}',
             'event_date_where': 'BETWEEN',
             'format': 'json',
         }
+        if country:
+             params['country'] = country
+        if iso:
+             params['iso'] = str(iso)
+        if not country or iso:
+             raise ValueError('Must supply country or numeric iso code')
         if page:
              params['page'] = str(page)
         with httpx.Client(timeout=TIMEOUT) as client:
