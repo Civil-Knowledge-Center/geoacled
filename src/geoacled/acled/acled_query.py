@@ -14,7 +14,7 @@ TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 ACLED_PAGE_LIMIT = 5000
 
 def _query_acled(country: str | None = None,
-                 iso: int | None = None,
+                 iso: str | None = None,
                  start: str | None = None,
                  end: str | None = None,
                  year: int | None = None,
@@ -36,7 +36,7 @@ def _query_acled(country: str | None = None,
         if country:
             params['country'] = country
         if iso:
-            params['iso'] = str(iso)
+            params['iso'] = iso
         if not country and not iso:
             raise ValueError('Must supply country or numeric iso code')
         if page:
@@ -69,7 +69,7 @@ class AcledMonth:
 class AcledYear:
 
     country: str | None = None
-    iso: int | None = None
+    iso: str | None = None
     year: int | None = 2021
 
     @cached_property
